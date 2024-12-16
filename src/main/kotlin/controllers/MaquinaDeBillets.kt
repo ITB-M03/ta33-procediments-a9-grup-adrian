@@ -1,102 +1,82 @@
 package org.example.controllers
 
-
-/**
- * @author Adrián Galinsoga
- * @date 10/12/2024
- *
- * Màquina de venda de bitllets de transport dels FGC i TMB
- *
- * Objectius:
- * Els objectius d’aquest exercici són:
- * • Treballar estructures condicionals
- * • Treballar estructures iteratives
- * • Implementar estructures de control d’input de dades
- * • La programació modular
- *
- *
- */
-
-
-/**
- * Funció principal que crida a la funció iniciarVenta
- */
 fun main() {
+    iniciarVenta()
 }
 
-
-/**
- * Funció que permet seleccionar un tipus de ticket i la quantitat de zones
- * @return Pair amb el preu final del ticket i el tipus de ticket seleccionat
- *
- */
-
 fun seleccionarTicket(): Pair<Double, Int> {
-    val opcionesTicket = """
-        1 - Ticket sencillo ............... 2,20€ (1 zona)
-        2 - TCasual ...................... 11,35€ (1 zona)
-        3 - TUsual (TMes) ................. 20,00€ (1 zona)
-        4 - Tarjeta T-70/90 FM/FN ......... 31,75€ (1 zona)
-        5 - TJove ......................... 40,00€ (Todas las zonas)
-    """.trimIndent()
+    println("Selecciona un tipo de ticket:")
+    println("1 - Ticket sencillo (2,20€)\n2 - TCasual (11,35€)\n3 - TUsual (20,00€)\n4 - T-70/90 (31,75€)\n5 - TJove (40,00€)")
 
-    var precioFinal = 0.0
-    var seleccionValida = false
-    var zonaValida = false
+    val precios = listOf(2.2, 11.35, 20.0, 31.75, 40.0)
+    val seleccion = obtenerNumero("Ingresa el número del ticket (1-5):", 1..5)
 
-    println("\nSelecciona un tipo de ticket:\n")
-    println(opcionesTicket)
+    var precioFinal = precios[seleccion - 1]
 
-    var seleccion = 0
-    while (!seleccionValida) {
-        try {
-            print("Ingresa el número del ticket: ")
-            seleccion = readLine()?.toIntOrNull() ?: -1
-            if (seleccion in 1..5) {
-                seleccionValida = true
-                precioFinal = when (seleccion) {
-                    1 -> 2.2
-                    2 -> 11.35
-                    3 -> 20.0
-                    4 -> 31.75
-                    5 -> 40.0
-                    else -> 0.0
-                }
-
-                if (seleccion != 5) {
-                    while (!zonaValida) {
-                        try {
-                            print("Selecciona la cantidad de zonas: 1, 2 o 3\n")
-                            val zonas = readLine()?.toIntOrNull() ?: -1
-
-                            if (zonas in 1..3) {
-                                zonaValida = true
-                                println("Cargando plataforma de pagos...")
-                                precioFinal *= when (zonas) {
-                                    2 -> 1.35
-                                    3 -> 1.89
-                                    else -> 1.0
-                                }
-                            } else {
-                                println("Por favor, selecciona una zona válida")
-                            }
-                        } catch (e: Exception) {
-                            println("Por favor, ingresa un número válido para las zonas")
-                        }
-                    }
-                }
-            } else {
-                println("Por favor, selecciona un ticket válido")
-            }
-        } catch (e: Exception) {
-            println("Por favor, ingresa un número válido")
+    if (seleccion != 5) {
+        val zonas = obtenerNumero("Selecciona la cantidad de zonas (1-3):", 1..3)
+        precioFinal *= when (zonas) {
+            2 -> 1.35
+            3 -> 1.89
+            else -> 1.0
         }
     }
 
     return Pair(precioFinal, seleccion)
 }
+fun comprarTicket(precio: Double, seleccion: Int) {
+    val tiposTicket = listOf("Ticket sencillo", "TCasual", "TUsual", "T-70/90", "TJove")
+    println("El precio del ${tiposTicket[seleccion - 1]} es: ${"%.2f".format(precio)}€")
 
+    var totalDinero = 0.0
+    while (totalDinero < precio) {
+        val dinero = obtenerDinero("Introduce dinero (ej. 0.1, 1.0):")
+        totalDinero += dinero
+        if (totalDinero < precio) {
+            println("Faltan ${"%.2f".format(precio - totalDinero)}€.")
+        }
+    }
+    println("¡Compra realizada! Cambio: ${"%.2f".format(totalDinero - precio)}€.")
+}
 
+fun iniciarVenta() {
+    val codigoSecreto = "4321"
+    println("Presiona Enter para continuar o escribe el código secreto para detener la máquina:")
 
+    if (readLine() == codigoSecreto) {
+        println("Máquina detenida.")
+        return
+    }
 
+    do {
+        val (precio, tipo) = seleccionarTicket()
+        comprarTicket(precio, tipo)
+        println("¿Quieres comprar otro ticket? (si/no):")
+    } while (readLine()?.lowercase() == "si")
 
+    println("¡Gracias por usar la máquina de tickets!")
+}
+
+fun obtenerNumero(mensaje: String, rango: IntRange?): Int {
+    var numero: Int?
+    do {
+        println(mensaje)
+        numero = readLine()?.toIntOrNull()
+        if (numero == null || (rango != null && numero !in rango)) {
+            println("Por favor, ingresa un número válido.")
+        }
+    } while (numero == null || (rango != null && numero !in rango))
+    return numero
+}
+
+fun obtenerDinero(mensaje: String): Double {
+    var dinero: Double?
+    do {
+        println(mensaje)
+        dinero = readLine()?.toDoubleOrNull()
+        if (dinero == null || dinero <= 0) {
+            println("Por favor, ingresa una cantidad válida.")
+        }
+    } while (dinero == null || dinero <= 0)
+    return dinero
+}
